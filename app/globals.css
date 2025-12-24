@@ -1,0 +1,344 @@
+@import "react-grid-layout/css/styles.css";
+@import "react-resizable/css/styles.css";
+@import "tailwindcss";
+/* Web fonts are loaded via next/font in layout.tsx to avoid CSS import ordering issues */
+@plugin './hero.ts';
+@source '../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-nunito), var(--font-open-sans), var(--font-noto-sans-sc), var(--font-wqy-zenhei), var(--font-geist-sans), system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-display: var(--font-quicksand), var(--font-nunito), var(--font-open-sans), var(--font-geist-sans), system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  --color-primary: #F8B4D9;
+  --color-secondary: #B4E4FF;
+  --color-accent: #D8B4FE;
+  --color-success: #B4FEB4;
+  --radius-large: 1rem;
+  --color-kawaii-bg: #fff1f2;
+  --color-kawaii-card: #ffffff;
+  --color-kawaii-text: #4c1d95;
+  --color-kawaii-pink: #fb7185;
+  --color-kawaii-pinkLight: #fce7f3;
+  --color-kawaii-purple: #a78bfa;
+  --color-kawaii-purpleLight: #ede9fe;
+  --color-kawaii-blue: #60a5fa;
+  --color-kawaii-mint: #34d399;
+  --color-kawaii-yellow: #fbbf24;
+  --shadow-soft: 0 10px 40px -10px rgba(251, 113, 133, 0.15);
+  --shadow-pop: 0 4px 0px 0px rgba(0,0,0,0.1);
+  --shadow-pop-hover: 0 6px 0px 0px rgba(0,0,0,0.1);
+  --shadow-card: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background-color: var(--color-kawaii-bg);
+  background-image: radial-gradient(#fda4af 1.5px, transparent 1.5px), radial-gradient(#fda4af 1.5px, var(--color-kawaii-bg) 1.5px);
+  background-size: 30px 30px;
+  background-position: 0 0, 15px 15px;
+  color: var(--color-kawaii-text);
+  font-family: var(--font-sans);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-kawaii-pinkLight); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #f472b6; }
+
+.text-item-editor,
+.text-item-readonly {
+  width: 100%;
+  min-height: 100%;
+  outline: none;
+  border: none;
+  background: transparent;
+  font-size: inherit;
+  line-height: 1.2;
+  white-space: pre !important;
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  overflow: hidden !important;
+  color: inherit;
+  font-family: inherit;
+}
+
+.text-item-editor *,
+.text-item-readonly * {
+  white-space: inherit !important;
+  overflow-wrap: inherit !important;
+  word-break: inherit !important;
+}
+
+/* Kawaii utility classes */
+.text-kawaii-text { color: var(--color-kawaii-text); }
+.text-kawaii-purple { color: var(--color-kawaii-purple); }
+.text-kawaii-blue { color: var(--color-kawaii-blue); }
+.text-kawaii-mint { color: var(--color-kawaii-mint); }
+.text-kawaii-yellow { color: var(--color-kawaii-yellow); }
+.bg-kawaii-pink { background-color: var(--color-kawaii-pink); }
+.bg-kawaii-pinkLight { background-color: var(--color-kawaii-pinkLight); }
+.bg-kawaii-purpleLight { background-color: var(--color-kawaii-purpleLight); }
+.border-kawaii-pinkLight { border-color: var(--color-kawaii-pinkLight); }
+.font-display { font-family: var(--font-display); }
+.shadow-soft { box-shadow: var(--shadow-soft); }
+.shadow-pop { box-shadow: var(--shadow-pop); }
+.shadow-pop-hover { box-shadow: var(--shadow-pop-hover); }
+.shadow-card { box-shadow: var(--shadow-card); }
+
+.text-item-editor p,
+.text-item-readonly p {
+  margin: 0 0 0.5rem;
+}
+
+.text-item-editor h1,
+.text-item-readonly h1 {
+  font-size: 1.5em;
+  font-weight: 700;
+  margin: 1rem 0 0.5rem;
+}
+
+.text-item-editor h2,
+.text-item-readonly h2 {
+  font-size: 1.25em;
+  font-weight: 600;
+  margin: 0.75rem 0 0.4rem;
+}
+
+.text-item-editor h3,
+.text-item-readonly h3 {
+  font-size: 1.125em;
+  font-weight: 600;
+  margin: 0.6rem 0 0.3rem;
+}
+
+.text-item-editor ul,
+.text-item-readonly ul {
+  padding-left: 1.25rem;
+  margin: 0.5rem 0;
+  list-style: disc;
+}
+
+.text-item-editor ol,
+.text-item-readonly ol {
+  padding-left: 1.25rem;
+  margin: 0.5rem 0;
+  list-style: decimal;
+}
+
+.text-item-editor li,
+.text-item-readonly li {
+  margin: 0.25rem 0;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  body {
+    background: white !important;
+    background-image: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .print-root,
+  .print-root * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  .print-root {
+    background: white !important;
+    padding: 0 !important;
+    min-height: auto !important;
+  }
+  .text-item-readonly,
+  .text-item-readonly * {
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    overflow: visible !important;
+  }
+  .print-mask {
+    background: white !important;
+    /* mask 保持不变，依然是中间镂空，四周显示背景（此时背景是白色） */
+    -webkit-mask-composite: xor !important;
+    mask-composite: exclude !important;
+    z-index: 9999 !important;
+  }
+  /* 打印时隐藏提醒文字 */
+  .print-mask::after {
+    display: none !important;
+  }
+}
+
+.print-mask {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-sizing: border-box;
+  z-index: 50;
+  border-width: 0 !important; /* 不再使用边框 */
+  
+  /* 
+    背景：斜线纹理 
+    增加对比度，使用淡红色/灰色混合，起到警示作用
+  */
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(251, 113, 133, 0.15) 0,
+    rgba(251, 113, 133, 0.15) 1px,
+    transparent 0,
+    transparent 8px
+  );
+
+  /* 
+    遮罩：
+    layer1 (content-box): 中间内容区域，黑色（完全不透明）
+    layer2 (border-box): 整体区域，黑色（完全不透明）
+    
+    mask-composite: exclude (xor)
+    整体 - 中间 = 只有四周（即 padding 区域）显示背景
+  */
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  
+  /* 为了让 content-box 生效，必须有 padding，这里的 padding 由 style 动态注入 */
+}
+
+/* 提醒文字 */
+.print-mask::after {
+  content: "NO PRINT ZONE";
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(251, 113, 133, 1);
+  letter-spacing: 1px;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2px 4px;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+/* 可爱滚动条样式 */
+.scrollbar-kawaii {
+  scrollbar-width: thin;
+  scrollbar-color: #d8b4fe #faf5ff;
+}
+.scrollbar-kawaii::-webkit-scrollbar {
+  width: 10px;
+}
+.scrollbar-kawaii::-webkit-scrollbar-track {
+  background: #faf5ff;
+  border-radius: 9999px;
+}
+.scrollbar-kawaii::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #fbcfe8 0%, #d8b4fe 100%);
+  border-radius: 9999px;
+  border: 2px solid #faf5ff;
+  transition: background 200ms ease, transform 200ms ease;
+}
+.scrollbar-kawaii::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #f472b6 0%, #a78bfa 100%);
+  transform: scale(1.05);
+}
+.scrollbar-kawaii {
+  border-radius: 24px;
+  overflow: auto;
+}
+.scrollbar-kawaii::-webkit-scrollbar-track {
+  background: #faf5ff;
+  border-radius: 24px;
+  margin: 6px;
+}
+.scrollbar-kawaii::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+}
+.mask-fade-edges::before,
+.mask-fade-edges::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 16px;
+  pointer-events: none;
+  z-index: 1;
+}
+.mask-fade-edges::before {
+  top: 0;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.7), rgba(255,255,255,0));
+  border-top-left-radius: 32px;
+  border-top-right-radius: 32px;
+}
+.mask-fade-edges::after {
+  bottom: 0;
+  background: linear-gradient(to top, rgba(255,255,255,0.7), rgba(255,255,255,0));
+  border-bottom-left-radius: 32px;
+  border-bottom-right-radius: 32px;
+}
+
+/* 编辑器格子交互效果（仅 hover/聚焦/选中/重叠时启用）*/
+.hover-glass {
+  transition: all 0.2s ease;
+  /* 默认透明背景，由内联样式或 Tailwind 类控制 */
+}
+
+.hover-glass:hover,
+.hover-glass:focus,
+.active-glass {
+  background-color: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 26px 46px -32px rgba(15, 23, 42, 0.45), 0 12px 24px -12px rgba(147, 51, 234, 0.25);
+  backdrop-filter: blur(14px);
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}

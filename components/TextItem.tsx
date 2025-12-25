@@ -38,15 +38,30 @@ import {
   FOCUS_COMMAND,
 } from "lexical";
 import { useActiveEditor } from "@/context/ActiveEditorContext";
-import { sanitizeLexicalHtml } from "@/utils/sanitize-html";
+import { normalizeTextAlign, sanitizeLexicalHtml } from "@/utils/sanitize-html";
 
 const DEFAULT_HTML = "<p></p>";
 
+function sanitizeHtml(html: string): string {
+  return sanitizeLexicalHtml(html);
+}
+
+function ensureNonEmptyHtml(html: string): string {
+  return html && html.length > 0 ? html : DEFAULT_HTML;
+}
+
 function parseHtmlToNodes(editor: LexicalEditor, html: string): LexicalNode[] {
   const parser = new DOMParser();
-  const normalized = html && html.length > 0 ? html : DEFAULT_HTML;
-  const safeHtml = sanitizeLexicalHtml(normalized) || DEFAULT_HTML;
-  const dom = parser.parseFromString(safeHtml, "text/html");
+  const normalized = ensureNonEmptyHtml(html);
+  const dom = parser.parseFromString(normalized, "text/html");
+  const listItems = dom.body.querySelectorAll("li");
+  listItems.forEach((item) => {
+    const inlineAlign = item.style.textAlign;
+    const align = inlineAlign ? normalizeTextAlign(inlineAlign) : null;
+    if (!align) return;
+    item.style.textAlign = "";
+    item.setAttribute("data-lexical-align", align);
+  });
   const generatedNodes = $generateNodesFromDOM(editor, dom);
   if (generatedNodes.length === 0) {
     return [$createParagraphNode()];
@@ -81,7 +96,7 @@ function ExternalHtmlSyncPlugin({
   const [editor] = useLexicalComposerContext();
 
   useEffect(() => {
-    const safeHtml = sanitizeLexicalHtml(html);
+    const safeHtml = sanitizeHtml(html);
     if (safeHtml === lastSyncedHtmlRef.current) {
       return;
     }
@@ -138,7 +153,7 @@ function FocusTrackerPlugin() {
 }
 
 function TextItemReadOnly({ html, style }: { html: string; style?: CSSProperties }) {
-  const safeHtml = useMemo(() => sanitizeLexicalHtml(html), [html]);
+  const safeHtml = useMemo(() => sanitizeHtml(html), [html]);
   return (
     <div
       className="text-item-readonly pointer-events-none select-none"
@@ -149,8 +164,8 @@ function TextItemReadOnly({ html, style }: { html: string; style?: CSSProperties
 }
 
 function TextItemEditable({ html, style, onChange }: { html: string; style?: CSSProperties; onChange: (newHtml: string) => void }) {
-  const initialHtmlRef = useRef(sanitizeLexicalHtml(html));
-  const lastSyncedHtmlRef = useRef(sanitizeLexicalHtml(html));
+  const initialHtmlRef = useRef(sanitizeHtml(html));
+  const lastSyncedHtmlRef = useRef(initialHtmlRef.current);
   const [isFocused, setIsFocused] = useState(false);
   const initialConfig = useMemo(
     () => ({
@@ -158,6 +173,22 @@ function TextItemEditable({ html, style, onChange }: { html: string; style?: CSS
       editable: true,
       nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode, CodeNode, LinkNode],
       theme: {},
+      html: {
+        import: {
+          li: (domNode: HTMLElement) => ({
+            conversion: () => {
+              const node = new ListItemNode();
+              const rawAlign = domNode.getAttribute("data-lexical-align");
+              const align = rawAlign ? normalizeTextAlign(rawAlign) : null;
+              if (align) {
+                node.setFormat(align);
+              }
+              return { node };
+            },
+            priority: 1 as const,
+          }),
+        },
+      },
       onError(error: Error) {
         console.error("Lexical error:", error);
         throw error;
@@ -175,7 +206,7 @@ function TextItemEditable({ html, style, onChange }: { html: string; style?: CSS
     (editorState: EditorState, editor: LexicalEditor) => {
       editorState.read(() => {
         const htmlString = $generateHtmlFromNodes(editor);
-        const safeHtml = sanitizeLexicalHtml(htmlString);
+        const safeHtml = sanitizeHtml(htmlString);
         if (safeHtml === lastSyncedHtmlRef.current) {
           return;
         }

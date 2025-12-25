@@ -23,7 +23,43 @@ const ALLOWED_TAGS = new Set([
   "span",
 ]);
 
-const ALLOWED_ATTRS = new Set(["href", "target", "rel", "dir"]);
+const ALLOWED_ATTRS = new Set(["href", "target", "rel", "dir", "style"]);
+
+export type TextAlign = "left" | "center" | "right" | "justify" | "start" | "end";
+
+const ALLOWED_TEXT_ALIGN = new Set<TextAlign>([
+  "left",
+  "center",
+  "right",
+  "justify",
+  "start",
+  "end",
+]);
+
+export function normalizeTextAlign(rawValue: string): TextAlign | null {
+  const value = rawValue.trim().toLowerCase().replace(/\s*!important$/, "");
+  return ALLOWED_TEXT_ALIGN.has(value as TextAlign) ? (value as TextAlign) : null;
+}
+
+function sanitizeStyle(styleValue: string) {
+  const declarations = styleValue
+    .split(";")
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const kept: string[] = [];
+
+  declarations.forEach((decl) => {
+    const [rawProp, ...rest] = decl.split(":");
+    if (!rawProp || rest.length === 0) return;
+    const prop = rawProp.trim().toLowerCase();
+    if (prop !== "text-align") return;
+    const value = normalizeTextAlign(rest.join(":"));
+    if (!value) return;
+    kept.push(`text-align: ${value}`);
+  });
+
+  return kept.length > 0 ? kept.join("; ") : null;
+}
 
 function isSafeHref(href: string) {
   const trimmed = href.trim().toLowerCase();
@@ -67,6 +103,16 @@ function sanitizeElement(element: Element) {
       continue;
     }
 
+    if (name === "style") {
+      const nextStyle = sanitizeStyle(attr.value);
+      if (!nextStyle) {
+        element.removeAttribute(attr.name);
+      } else {
+        element.setAttribute("style", nextStyle);
+      }
+      continue;
+    }
+
     if (name === "href" && !isSafeHref(attr.value)) {
       element.removeAttribute(attr.name);
       continue;
@@ -102,4 +148,3 @@ export function sanitizeLexicalHtml(html: string): string {
 
   return doc.body.innerHTML;
 }
-

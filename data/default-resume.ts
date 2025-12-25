@@ -429,7 +429,7 @@ export const DEFAULT_RESUME_DATA: ResumeData = {
       {
         "id": "ae01ed22-8893-465d-ad38-88e1b928ee0a",
         "type": "text",
-        "content": "<p dir=\"ltr\"><span>点击右侧</span><b><strong>New</strong></b></p><p dir=\"ltr\"><span>从空白纸张开始</span></p>",
+        "content": "<p dir=\"ltr\"><span>点击左侧</span><b><strong>New</strong></b></p><p dir=\"ltr\"><span>从空白纸张开始</span></p>",
         "layout": {
           "x": 13,
           "y": 1,

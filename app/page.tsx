@@ -12,7 +12,7 @@ import { useItemStyleEditor } from "@/hooks/useItemStyleEditor";
 import { useResumeEditor } from "@/hooks/useResumeEditor";
 import { DEFAULT_LAYOUT_SETTINGS, GRID_COLS, GRID_ROW_HEIGHT, normalizeResumeContent } from "@/utils/resume";
 import { calcOverlapIds, computeCenteredPosition } from "@/utils/resumeItemUtils";
-import type { LayoutSettings, ResumeItem } from "@/types/resume";
+import type { LayoutSettings, ResumeData, ResumeItem } from "@/types/resume";
 import { DEFAULT_RESUME_DATA, DEFAULT_RESUME_TITLE } from "@/data/default-resume";
 import { A4_HEIGHT_PX, A4_WIDTH_PX, WATERMARK_SAFE_BOTTOM_PX } from "@/utils/pageSize";
 import { savePrintData } from "@/utils/printStorage";
@@ -133,15 +133,25 @@ export default function Home() {
     return calcOverlapIds(resumeData.items);
   }, [resumeData]);
 
+  const getResumeData = useCallback(
+    (onMissing?: () => void): ResumeData | null => {
+      if (!resumeData) {
+        setError("简历内容尚未加载完成");
+        onMissing?.();
+        return null;
+      }
+      return resumeData;
+    },
+    [resumeData, setError],
+  );
+
   const handleAddSectionTitle = useCallback(() => {
-    if (!resumeData) {
-      setError("简历内容尚未加载完成");
-      return;
-    }
+    const data = getResumeData();
+    if (!data) return;
     const defaultW = 24;
     const defaultH = 3;
     const accentColor =
-      resumeData.layout_settings?.accent_color ??
+      data.layout_settings?.accent_color ??
       DEFAULT_LAYOUT_SETTINGS.accent_color;
 
     withHistory((prev) => {
@@ -160,13 +170,10 @@ export default function Home() {
       };
       return { ...prev, items: [...prev.items, newItem] };
     });
-  }, [resumeData, setError, withHistory]);
+  }, [getResumeData, withHistory]);
 
   const handleAddText = useCallback(() => {
-    if (!resumeData) {
-      setError("简历内容尚未加载完成");
-      return;
-    }
+    if (!getResumeData()) return;
     const defaultW = 12;
     const defaultH = 6;
     withHistory((prev) => {
@@ -183,16 +190,14 @@ export default function Home() {
       };
       return { ...prev, items: [...prev.items, newItem] };
     });
-  }, [resumeData, setError, withHistory]);
+  }, [getResumeData, withHistory]);
 
   const handleAddDivider = useCallback(() => {
-    if (!resumeData) {
-      setError("简历内容尚未加载完成");
-      return;
-    }
+    const data = getResumeData();
+    if (!data) return;
 
     const accentColor =
-      resumeData.layout_settings?.accent_color ??
+      data.layout_settings?.accent_color ??
       DEFAULT_LAYOUT_SETTINGS.accent_color;
 
     withHistory((prev) => {
@@ -208,7 +213,7 @@ export default function Home() {
       };
       return { ...prev, items: [...prev.items, newDivider] };
     });
-  }, [resumeData, setError, withHistory]);
+  }, [getResumeData, withHistory]);
 
   const appendImageItem = useCallback(
     (src: string) => {
@@ -230,12 +235,9 @@ export default function Home() {
   );
 
   const handleAddImageClick = useCallback(() => {
-    if (!resumeData) {
-      setError("简历内容尚未加载完成");
-      return;
-    }
+    if (!getResumeData()) return;
     fileInputRef.current?.click();
-  }, [resumeData]);
+  }, [getResumeData]);
 
   const handleImageUpload = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
@@ -244,9 +246,9 @@ export default function Home() {
         return;
       }
 
-      if (!resumeData) {
-        setError("简历内容尚未加载完成");
+      if (!getResumeData(() => {
         event.target.value = "";
+      })) {
         return;
       }
 
@@ -284,7 +286,7 @@ export default function Home() {
       };
       reader.readAsDataURL(file);
     },
-    [appendImageItem, resumeData],
+    [appendImageItem, getResumeData, setError],
   );
 
   const handleSelectItem = useCallback(
@@ -298,13 +300,11 @@ export default function Home() {
     name.replace(/[\\/:*?"<>|]+/g, "_").trim() || "resume";
 
   const handleDownloadJson = useCallback(() => {
-    if (!resumeData) {
-      setError("简历内容尚未加载完成");
-      return;
-    }
+    const data = getResumeData();
+    if (!data) return;
     const payload = {
       title: title.trim() || DEFAULT_RESUME_TITLE,
-      content: resumeData,
+      content: data,
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], {
       type: "application/json",
@@ -315,7 +315,7 @@ export default function Home() {
     anchor.download = `${sanitizeFilename(payload.title)}.json`;
     anchor.click();
     URL.revokeObjectURL(url);
-  }, [resumeData, title]);
+  }, [getResumeData, title]);
 
   const handleImportJsonClick = useCallback(() => {
     importInputRef.current?.click();
@@ -352,14 +352,21 @@ export default function Home() {
     [resetEditorState],
   );
 
+  const handleNewResume = useCallback(() => {
+    const data = getResumeData();
+    if (!data) return;
+    const ok = window.confirm("确认要清空当前内容并重置标题吗？此操作不可撤销。");
+    if (!ok) return;
+    resetEditorState({ ...data, items: [] });
+    setTitle(DEFAULT_RESUME_TITLE);
+  }, [getResumeData, resetEditorState, setTitle]);
+
   const handlePrint = useCallback(async () => {
-    if (!resumeData) {
-      setError("简历内容尚未加载完成");
-      return;
-    }
+    const data = getResumeData();
+    if (!data) return;
     const payload = {
       title: title.trim() || DEFAULT_RESUME_TITLE,
-      content: resumeData,
+      content: data,
     };
     try {
       const ok = await savePrintData(payload);
@@ -382,7 +389,7 @@ export default function Home() {
         message: "保存打印数据时发生错误，请重试。",
       });
     }
-  }, [resumeData, showAlert, title]);
+  }, [getResumeData, showAlert, title]);
 
   return (
     <ActiveEditorProvider>
@@ -390,6 +397,7 @@ export default function Home() {
         <div className="relative">
           <div className="fixed left-6 inset-y-0 z-40 flex items-center">
             <Dock
+              onNewResume={handleNewResume}
               onAddText={handleAddText}
               onAddSectionTitle={handleAddSectionTitle}
               onAddImage={handleAddImageClick}

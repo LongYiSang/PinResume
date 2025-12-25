@@ -4,6 +4,7 @@ import { Type, Image as ImageIcon, Minus, Heading, Settings } from "lucide-react
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/react";
 
 type DockProps = {
+  onNewResume: () => void;
   onAddText: () => void;
   onAddSectionTitle: () => void;
   onAddImage: () => void;
@@ -15,6 +16,7 @@ type DockProps = {
 };
 
 export default function Dock({
+  onNewResume,
   onAddText,
   onAddSectionTitle,
   onAddImage,
@@ -26,9 +28,15 @@ export default function Dock({
 }: DockProps) {
   return (
     <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-[32px] shadow-soft px-3 py-6 flex flex-col gap-6 transition-all duration-300 hover:shadow-card z-50">
-      <div className="w-12 h-12 bg-gradient-to-br from-kawaii-pink to-kawaii-purple rounded-2xl flex items-center justify-center shadow-lg shadow-kawaii-pink/30 mx-auto">
-        <span className="text-white font-bold text-xl">Cv</span>
-      </div>
+      <button
+        type="button"
+        onClick={onNewResume}
+        disabled={disabled}
+        aria-label="New"
+        className="w-12 h-12 bg-gradient-to-br from-kawaii-pink to-kawaii-purple rounded-2xl flex items-center justify-center shadow-lg shadow-kawaii-pink/30 mx-auto outline-none transition-transform duration-200 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        <span className="text-[#F2DDE0] font-bold text-xl">New</span>
+      </button>
 
       <div className="flex flex-col gap-3">
         <div className="text-[10px] font-bold text-center text-kawaii-text/40 uppercase tracking-wider">

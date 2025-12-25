@@ -22,6 +22,7 @@
     "@types/react-resizable": "^3.0.8",
     "framer-motion": "^11.0.0",
     "lexical": "^0.17.1",
+    "localforage": "^1.10.0",
     "lucide-react": "^0.554.0",
     "next": "16.0.1",
     "react": "19.2.0",
@@ -32,6 +33,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/localforage": "^0.0.33",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

@@ -352,7 +352,7 @@ export default function Home() {
     [resetEditorState],
   );
 
-  const handlePrint = useCallback(() => {
+  const handlePrint = useCallback(async () => {
     if (!resumeData) {
       setError("简历内容尚未加载完成");
       return;
@@ -361,18 +361,26 @@ export default function Home() {
       title: title.trim() || DEFAULT_RESUME_TITLE,
       content: resumeData,
     };
-    const ok = savePrintData(payload);
-    if (!ok) {
+    try {
+      const ok = await savePrintData(payload);
+      if (!ok) {
+        showAlert({
+          title: "打印失败",
+          message: "保存打印数据失败，可能是图片过大或浏览器存储已满。",
+        });
+        return;
+      }
+      const printUrl = new URL("print/", window.location.href).toString();
+      const win = window.open(printUrl, "_blank");
+      if (!win) {
+        setError("无法打开打印窗口，请检查浏览器弹窗设置");
+      }
+    } catch (err) {
+      console.error("打印失败", err);
       showAlert({
         title: "打印失败",
-        message: "保存打印数据失败，可能是图片过大或浏览器存储已满。",
+        message: "保存打印数据时发生错误，请重试。",
       });
-      return;
-    }
-    const printUrl = new URL("print/", window.location.href).toString();
-    const win = window.open(printUrl, "_blank");
-    if (!win) {
-      setError("无法打开打印窗口，请检查浏览器弹窗设置");
     }
   }, [resumeData, showAlert, title]);
 

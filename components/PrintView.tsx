@@ -65,17 +65,26 @@ export function PrintView() {
       }
     };
 
-    const payload = loadPrintData();
-    const normalized = payload ? normalizeResumeContent(payload.content) : null;
-    if (!payload || !normalized) {
-      setError("没有可打印的数据，请从编辑页重新打开。");
-      setIsLoading(false);
-      return;
-    }
-    document.title = payload.title || "简历";
-    void finalizeRender(normalized).then(() => {
-      clearPrintData();
-    });
+    const loadAndPrint = async () => {
+      try {
+        const payload = await loadPrintData();
+        const normalized = payload ? normalizeResumeContent(payload.content) : null;
+        if (!payload || !normalized) {
+          setError("没有可打印的数据，请从编辑页重新打开。");
+          setIsLoading(false);
+          return;
+        }
+        document.title = payload.title || "简历";
+        await finalizeRender(normalized);
+        await clearPrintData();
+      } catch (err) {
+        console.error("加载打印数据失败", err);
+        setError("加载打印数据失败，请重试。");
+        setIsLoading(false);
+      }
+    };
+
+    loadAndPrint();
 
     return () => {
       cancelled = true;

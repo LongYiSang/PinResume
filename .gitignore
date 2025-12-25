@@ -42,3 +42,6 @@ next-env.d.ts
 
 /components/.gitkeep
 /styles/.gitkeep
+
+# AI
+AGENTS.md
